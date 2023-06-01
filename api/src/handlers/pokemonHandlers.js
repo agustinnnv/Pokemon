@@ -1,36 +1,44 @@
-// --> pokemon/?name=pikachu&vida=100
-const { createPokemonDb, getPokemonDb } = require('../controllers/PokemonController.js');
+const {createPokemonDb, getAllPokemons, getPokemonById} = require('../controllers/PokemonController.js');
 
-
-const createPokemonHandler = async (req, res ) => {
-    const {name, life, attack, defense, weight} = req.body;
+// ---> pokemon/?name=pikachu&vida=100
+const createPokemonHandler = async (req, res) => { 
+    const { name, img, hp, attack, defense, speed, height, weight, type} = req.body;
     try {
-        const response = await createPokemonDb(name, life, attack, defense, weight);
-        res.status(200).json({response})
+        const newPokemon = await createPokemonDb(name, img, hp, attack, defense, speed, height, weight, type);
+        const types = Array.isArray(type) ? type : [type];
+        const response = {...newPokemon.toJSON(), types}
+        res.status(200).json(response);
     } catch (error) {
-        res.status(400).json({error: error.message});
+        res.status(400).json({error: error.message})
     }
-   }
-const getAllPokemonsHandler = async (req, res) => {
-    const {name} =  req.query;
+}
+const getAllPokemonsHandler = async( req  , res) => {
+    const { name } = req.query;
     try {
-        if (name) {
-            const response = await getPokemonDb(name);
-            return res.status(200)
+        if( name ) {
+            const response = await getAllPokemons(name);
+           return res
+            .status(200)
             .json(response);
-
         }
-        const response = await getPokemonDb();
-            return res.status(200)
-            .json(response);
+        const response = await getAllPokemons();
+        return res.status(200).json(response);
     } catch (error) {
         return res.status(400).send({error: error.message});
-      
-}}
-const getPokemonIdHandler =  (req, res) => {
-    const {id} =req.params;
-    res.status(200).send(`Usuario con id ${id}`);   
-};
+    }
+}
+
+const getPokemonIdHandler = async (req, res) => {
+    const {id} = req.params;
+    try {
+        const response = await getPokemonById(id);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+    
+}
+
 module.exports = {
     getAllPokemonsHandler,
     getPokemonIdHandler,
